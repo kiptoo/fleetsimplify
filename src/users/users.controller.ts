@@ -44,7 +44,8 @@ export class UsersController {
     .cookie('access_token', token, {
         httpOnly: true,
         // domain: 'localhost', // your domain here!
-        domain: 'herokuapp.com', // your domain here!
+        // domain: 'herokuapp.com', // your domain here!
+        domain: 'fleetsimplify-test.herokuapp.com', // your domain here!
         expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
       })
       .send({ success: true,user:payload });
