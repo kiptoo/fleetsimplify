@@ -1,41 +1,43 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import * as mongoose from 'mongoose';
-import{UserDto} from '../users/dto/user.dto'
-import { compare, hash } from 'bcrypt';
-import { from, Observable } from 'rxjs';
+import { Document,Types } from 'mongoose';
+import {compare, hash } from 'bcrypt';
+import { Post } from './post.schema';
 
 export type UserDocument = User & Document;
 // const User = mongoose.model<IUser & Document>("users", UserSchema);
 
-interface  IUser extends Document  {
-  firstname: string
-  lastname:string
-  email:string
-    password: string
-  
-}
 
 @Schema()
-export class User {
+export class User extends Document {
 
-  @Prop()
+  @Prop({required: true})
   firstname: string;
-  @Prop()
+  @Prop({required: true})
   lastname: string;
 
-  @Prop()
+  @Prop({required: true})
   email: string;
 
-  @Prop()
+  @Prop({required: true,select: false})
   password: string;
 
+  @Prop({type: [{ type: Types.ObjectId, ref: 'User' }]})
+  followed_by: [User];
 
+  @Prop({type: [{ type: Types.ObjectId, ref: 'User' }]})
+  following: [User];
+
+  @Prop({type: [{ type: Types.ObjectId, ref: 'Post' }]})
+  Likes: [Post];
+  
+  @Prop({required: true,default:new Date()})
+  createdAt: Date; 
+  comparePasswordMethod: Function;
 
 }
 
-
 export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.index({ "email": 1 }, { unique: true });
 // export const UserSchema = new mongoose.Schema({
 //   firstname: String,
 //   lastname: Number,
@@ -56,8 +58,10 @@ async function preSaveHook(next) {
 }
 UserSchema.pre<any>('save', preSaveHook);
 
-function comparePasswordMethod(password: string): Observable<any> {
-  return from(compare(password, this.password));
-}
-UserSchema.methods.isPassword = comparePasswordMethod;
-
+// async function comparePasswordMethod(password: string): Promise<boolean> {
+//   return compare(password, this.password);
+// }
+// UserSchema.methods.comparePassword  = comparePasswordMethod;
+UserSchema.methods.comparePasswordMethod = async function (password: string): Promise<boolean> {
+  return compare(password, this.password);
+};

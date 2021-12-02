@@ -1,8 +1,9 @@
 export class UserDto {
-  _id:string
+  _id?:string
   firstname:string
   lastname :string
   email :string
-  createdAt ?:string
+  password: string
+  createdAt ?:Date
 
 }
